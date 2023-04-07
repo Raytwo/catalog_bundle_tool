@@ -86,6 +86,10 @@ impl Catalog {
         serde_json::from_str(string.as_ref()).map_err(CatalogError::Json)
     }
 
+    pub fn from_slice<S: AsRef<[u8]>>(slice: S) -> Result<Self, CatalogError> {
+        serde_json::from_slice(slice.as_ref()).map_err(CatalogError::Json)
+    }
+
     pub fn get_internal_id_index<S: AsRef<str>>(&self, internal_id: S) -> Option<InternalId> {
         self.m_InternalIds
         .iter()
