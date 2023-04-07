@@ -25,8 +25,6 @@ dependencies = [
     "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/common/gradients_emblemw_dress.bundle",
     "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/common/gradients_morph_dress.bundle",
 ]
-
-
 ```
 
 ## Credits
