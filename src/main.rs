@@ -1,10 +1,10 @@
 use camino::Utf8PathBuf;
 use catalog::lookup::{ExtraId, KeyDataValue};
-use dialoguer::Select;
+use dialoguer::{ Select };
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
 
-use astra_formats::{Bundle, TextBundle};
+use astra_formats::TextBundle;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -198,9 +198,9 @@ fn main() {
                         std::process::exit(1);
                         unreachable!()
                     } else {
-                        let selection = Select::new()
+                        let selection = dialoguer::FuzzySelect::new()
                             .with_prompt(
-                                "Some InternalIds matching your input have been found, pick one",
+                                "Multiple InternalIds matching your input have been found, pick one or refine your search",
                             )
                             .items(&search)
                             .interact()
@@ -280,9 +280,9 @@ fn main() {
                         std::process::exit(1);
                         unreachable!()
                     } else {
-                        let selection = Select::new()
+                        let selection = dialoguer::FuzzySelect::new()
                             .with_prompt(
-                                "Some InternalIds matching your input have been found, pick one",
+                                "Multiple InternalIds matching your input have been found, pick one or refine your search",
                             )
                             .items(&search)
                             .interact()
@@ -342,8 +342,8 @@ fn main() {
                 })
             }
 
-            std::fs::write(args.out_path, serde_toml::to_string_pretty(&entries).unwrap()).unwrap()
-
+            std::fs::write(args.out_path, serde_toml::to_string_pretty(&entries).unwrap()).unwrap();
+            println!("Entry exported successfully.");
         }
     }
 }
