@@ -39,7 +39,7 @@ struct Add {
 
 #[derive(Debug, StructOpt)]
 struct Dependencies {
-    // InternalId to find dependencies for. Make sure to surround it in quotation marks to not run into trouble.
+    /// InternalId to find dependencies for. Make sure to surround it in quotation marks to not run into trouble.
     internal_id: String,
 }
 
