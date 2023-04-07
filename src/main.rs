@@ -1,5 +1,5 @@
 use camino::Utf8PathBuf;
-use catalog::lookup::ExtraId;
+use catalog::lookup::{ExtraId, KeyDataValue};
 use dialoguer::Select;
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
@@ -29,6 +29,8 @@ enum Command {
     Dependencies(Dependencies),
     /// Extract the JSON from a bundle file
     Extract(Extract),
+    /// Output a file addition compliant file for an existing Catalog entry
+    Dump(Dump),
 }
 
 #[derive(Debug, StructOpt)]
@@ -48,6 +50,14 @@ struct Dependencies {
 #[derive(Debug, StructOpt)]
 struct Extract {
     /// Output path for the JSON file
+    out_path: Utf8PathBuf,
+}
+
+#[derive(Debug, StructOpt)]
+struct Dump {
+    /// InternalId to dump. Make sure to surround it in quotation marks to not run into trouble.
+    internal_id: String,
+    /// Output path for the dumped entry
     out_path: Utf8PathBuf,
 }
 
@@ -227,6 +237,113 @@ fn main() {
             };
 
             std::fs::write(args.out_path, bundle.take_string().unwrap()).unwrap();
+        },
+        Command::Dump(args) => {
+            // Get a Catalog instance depending on the opening method
+            let res = if opt.bundled {
+                let mut bundle = TextBundle::load(&opt.catalog_path).unwrap();
+
+                catalog::catalog::Catalog::from_str(bundle.take_string().unwrap())
+            } else {
+                catalog::catalog::Catalog::open(&opt.catalog_path)
+            };
+
+            // Check for any obvious error
+            let mut catalog = match res {
+                Ok(val) => val,
+                Err(err) => {
+                    match err {
+                        catalog::catalog::CatalogError::Io(io) => {
+                            println!("An error happened while trying to open the Catalog: {}", io)
+                        }
+                        catalog::catalog::CatalogError::Json(json) => {
+                            println!("An error happened while trying to read the JSON: {}", json)
+                        }
+                        _ => (),
+                    }
+
+                    std::process::exit(1);
+                }
+            };
+
+            let internal_id = match catalog.get_internal_id_index(&args.internal_id) {
+                Some(id) => id,
+                None => {
+                    let search: Vec<&String> = catalog
+                        .m_InternalIds
+                        .iter()
+                        .filter(|id| id.contains(&args.internal_id))
+                        .collect();
+
+                    if search.is_empty() {
+                        println!("Couldn't find the index for this InternalId. Make sure you've got the spelling right.");
+                        std::process::exit(1);
+                        unreachable!()
+                    } else {
+                        let selection = Select::new()
+                            .with_prompt(
+                                "Some InternalIds matching your input have been found, pick one",
+                            )
+                            .items(&search)
+                            .interact()
+                            .unwrap();
+                        catalog.get_internal_id_index(search[selection]).unwrap()
+                    }
+                }
+            };
+
+            let entry = catalog
+                .get_entry_by_internal_id(internal_id)
+                .expect("No entry found for this InternalId. Is the file corrupted?");
+
+            let internal_path = match catalog.get_key(entry.primary_key).expect("Couldn't get the KeyDataValue???") {
+                KeyDataValue::String { string, .. } => Some(string),
+                KeyDataValue::Hash(_) => None,
+            }.expect("KeyDataValue is of type Hash. Is the file corrupted?");
+
+            // TODO: Add CatalogEntries::new()
+            let mut entries = CatalogEntries {
+                bundles: vec![],
+                prefabs: vec![],
+            };
+
+            let id = catalog.get_internal_id_from_index(internal_id).unwrap();
+
+            // If 0, we're dealing with a bundle
+            if entry.dependency_hash == 0 {
+                entries.bundles.push(ExtraBundles { internal_id: id.to_owned(), internal_path: internal_path.to_string() })
+            } else {
+                let deps = catalog
+                .get_dependencies(entry)
+                .expect("No dependency found for this InternalId. Are you sure this is a prefab?");
+
+                let dependencies = deps.iter().map(|id| {
+                        catalog
+                            .get_internal_id_from_index(catalog.get_entry(*id).unwrap().internal_id)
+                            .unwrap().to_owned()
+                }).collect();
+
+                // Just in case
+                if !deps.is_empty() {
+                    let bundle_entry = catalog.get_entry(deps[0]).unwrap();
+
+                    let bundle_id = catalog.get_internal_id_from_index(bundle_entry.internal_id).unwrap();
+                    let bundle_path = match catalog.get_key(bundle_entry.primary_key).expect("Couldn't get the KeyDataValue???") {
+                        KeyDataValue::String { string, .. } => Some(string),
+                        KeyDataValue::Hash(_) => None,
+                    }.expect("KeyDataValue is of type Hash. Is the file corrupted?");
+                    entries.bundles.push(ExtraBundles { internal_id: bundle_id.to_owned(), internal_path: bundle_path.to_string() })
+                }
+
+                entries.prefabs.push(ExtraPrefabs {
+                    internal_id: id.to_owned(),
+                    internal_path: internal_path.to_string(),
+                    dependencies
+                })
+            }
+
+            std::fs::write(args.out_path, serde_toml::to_string_pretty(&entries).unwrap()).unwrap()
+
         }
     }
 }
@@ -306,6 +423,6 @@ mod test {
             ],
         };
 
-        std::fs::write("dump.toml", serde_toml::to_string(&entries).unwrap()).unwrap()
+        std::fs::write("dump.toml", serde_toml::to_string_pretty(&entries).unwrap()).unwrap()
     }
 }
