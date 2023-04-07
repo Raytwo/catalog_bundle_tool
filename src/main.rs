@@ -4,7 +4,7 @@ use dialoguer::Select;
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
 
-use astra_formats::TextBundle;
+use astra_formats::{TextBundle, Bundle};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -27,6 +27,8 @@ enum Command {
     Add(Add),
     /// Output dependencies for a prefab
     Dependencies(Dependencies),
+    /// Extract the JSON from a bundle file
+    Extract(Extract),
 }
 
 #[derive(Debug, StructOpt)]
@@ -41,6 +43,12 @@ struct Add {
 struct Dependencies {
     /// InternalId to find dependencies for. Make sure to surround it in quotation marks to not run into trouble.
     internal_id: String,
+}
+
+#[derive(Debug, StructOpt)]
+struct Extract {
+    /// Output path for the JSON file
+    out_path: Utf8PathBuf,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -208,6 +216,17 @@ fn main() {
                         .unwrap()
                 )
             });
+        },
+        Command::Extract(args) => {
+            let mut bundle = match TextBundle::load(&opt.catalog_path) {
+                Ok(bundle) => bundle,
+                Err(err) => {
+                    println!("Couldn't not open the bundle file: {}", err);
+                    std::process::exit(1);
+                },
+            };
+
+            std::fs::write(args.out_path, bundle.take_string().unwrap()).unwrap();
         }
     }
 }
