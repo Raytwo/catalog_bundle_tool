@@ -4,7 +4,7 @@ use dialoguer::Select;
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
 
-use astra_formats::{TextBundle, Bundle};
+use astra_formats::{Bundle, TextBundle};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -35,8 +35,8 @@ enum Command {
 struct Add {
     /// Output path for the catalog file
     out_path: Utf8PathBuf,
-    /// Path to the JSON with the entries to append
-    json_path: Utf8PathBuf,
+    /// Path to the TOML with the entries to append
+    toml_path: Utf8PathBuf,
 }
 
 #[derive(Debug, StructOpt)]
@@ -107,7 +107,7 @@ fn main() {
 
             // Get the entries to add from the provided json
             let entries: CatalogEntries =
-                serde_json::from_str(&std::fs::read_to_string(args.json_path).unwrap()).unwrap();
+                serde_toml::from_str(&std::fs::read_to_string(args.toml_path).unwrap()).unwrap();
 
             // We're being lazy here and just getting a copy of an existing metadata for the entries we're about to add
             let extra = catalog
@@ -216,14 +216,14 @@ fn main() {
                         .unwrap()
                 )
             });
-        },
+        }
         Command::Extract(args) => {
             let mut bundle = match TextBundle::load(&opt.catalog_path) {
                 Ok(bundle) => bundle,
                 Err(err) => {
                     println!("Couldn't not open the bundle file: {}", err);
                     std::process::exit(1);
-                },
+                }
             };
 
             std::fs::write(args.out_path, bundle.take_string().unwrap()).unwrap();
@@ -237,7 +237,7 @@ fn main() {
 mod test {
     use catalog::lookup::KeyDataValue;
 
-    use crate::{ExtraPrefabs, CatalogEntries, ExtraBundles};
+    use crate::{CatalogEntries, ExtraBundles, ExtraPrefabs};
 
     // #[test]
     // pub fn edit_test() {
@@ -277,25 +277,35 @@ mod test {
     //     let dependency_buncket = dbg!(catalog.get_bucket(prefab_entry.dependency_key_idx).unwrap());
     // }
 
-    // #[test]
-    // pub fn output_example_json() {
-    //     let entries = CatalogEntries {
-    //                 bundles: vec![
-    //                     ExtraBundles {
-    //                         internal_id: "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle".to_string(),
-    //                         internal_path: "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle".to_string(), 
+    #[test]
+    pub fn output_example_toml() {
+        let entries = CatalogEntries {
+            bundles: vec![
+                ExtraBundles {
+                    internal_id: "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle".to_string(),
+                    internal_path: "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle".to_string(),
+                },
+                ExtraBundles {
+                    internal_id: "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle".to_string(),
+                    internal_path: "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle".to_string(),
+                },
+            ],
+            prefabs: vec![
+                ExtraPrefabs {
+                    internal_id: "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab".to_string(),
+                    internal_path: "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069".to_string(),
+                    dependencies: vec![
+                        String::from("{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle")
+                    ]
+                },
+                ExtraPrefabs {
+                    internal_id: "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab".to_string(),
+                    internal_path: "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069".to_string(),
+                    dependencies: vec![]
+                }
+            ],
+        };
 
-    //                     }
-    //                 ],
-    //                 prefabs: vec![
-    //                     ExtraPrefabs {
-    //                         internal_id: "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab".to_string(),
-    //                         internal_path: "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069".to_string(),
-    //                         dependencies: vec![
-    //                             String::from("{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle")
-    //                         ]
-    //                     }
-    //                 ],
-    //             };
-    // }
+        std::fs::write("dump.toml", serde_toml::to_string(&entries).unwrap()).unwrap()
+    }
 }

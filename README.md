@@ -6,26 +6,25 @@ Very early version, only tested on Fire Emblem Engage. It should, however, be us
 Use the ``-h`` argument for a list of supported commands.
 
 ## Example(s)
-Here is an example JSON to add a model bundle to Fire Emblem Engage:
-```json
-{
-  "bundles": [
-    {
-      "internal_id": "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle",
-      "internal_path": "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
-    }
-  ],
-  "prefabs": [
-    {
-      "internal_id": "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab",
-      "internal_path": "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069",
-      "dependencies": [
-        "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
-      ]
-    }
-  ]
-}
+Here is an example TOML to add a model bundle to Fire Emblem Engage:
+```toml
+[[bundles]]
+internal_id = "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
+internal_path = "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
 
+[[bundles]]
+internal_id = "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
+internal_path = "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
+
+[[prefabs]]
+internal_id = "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab"
+internal_path = "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069"
+dependencies = ["{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"]
+
+[[prefabs]]
+internal_id = "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab"
+internal_path = "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069"
+dependencies = []
 ```
 
 ## Credits
