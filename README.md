@@ -32,3 +32,4 @@ Here is an example JSON to add a model bundle to Fire Emblem Engage:
 Author and research: ``Raytwo``  
 Special thanks and research: ``Moonling``  
 Testers: ``Sierra``, ``DeathChaos25``
+Bundle support library: ``Thane``
