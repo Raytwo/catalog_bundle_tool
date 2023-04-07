@@ -9,22 +9,24 @@ Use the ``-h`` argument for a list of supported commands.
 Here is an example TOML to add a model bundle to Fire Emblem Engage:
 ```toml
 [[bundles]]
-internal_id = "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
-internal_path = "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
-
-[[bundles]]
-internal_id = "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
-internal_path = "fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"
+internal_id = "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/byl0am/c535/prefabs/ubody_byl0am_c535.bundle"
+internal_path = "fe_assets_unit/model/ubody/byl0am/c535/prefabs/ubody_byl0am_c535_2727518c6675e8bc51a36f771de88f3f.bundle"
 
 [[prefabs]]
-internal_id = "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab"
-internal_path = "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069"
-dependencies = ["{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/cor0af/c069/prefabs/ubody_cor0af_c069.bundle"]
+internal_id = "Assets/Share/Addressables/Unit/Model/uBody/Byl0AM/c535/Prefabs/uBody_Byl0AM_c535.prefab"
+internal_path = "Unit/Model/uBody/Byl0AM/c535/Prefabs/uBody_Byl0AM_c535"
+dependencies = [
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/ubody/byl0am/c535/prefabs/ubody_byl0am_c535.bundle",
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/common/gradients_emblemw_metal.bundle",
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/common/gradients_emblemw_skin.bundle",
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_customrp/shaders/chara/charastandard.shader.bundle",
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_shaders/utils/fallbackerror.shader.bundle",
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/common/gradients_morph_metal.bundle",
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/common/gradients_emblemw_dress.bundle",
+    "{UnityEngine.AddressableAssets.Addressables.RuntimePath}/Switch/fe_assets_unit/model/common/gradients_morph_dress.bundle",
+]
 
-[[prefabs]]
-internal_id = "Assets/Share/Addressables/Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069.prefab"
-internal_path = "Unit/Model/uBody/Cor0AF/c069/Prefabs/uBody_Cor0AF_c069"
-dependencies = []
+
 ```
 
 ## Credits
