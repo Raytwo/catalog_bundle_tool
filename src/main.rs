@@ -147,11 +147,13 @@ fn main() {
                     .expect("No entry found for this InternalId. Is the file corrupted?");
 
             let dependencies = catalog
-                .get_dependencies(entry)
-                .expect("No dependency found for this InternalId. Are you sure this is a prefab?");
+                .get_dependencies(entry);
 
             println!("InternalId: {}", catalog.get_internal_ids()[entry.internal_id.0 as usize]);
-            println!("Dependencies: {:#?}", dependencies.iter().flat_map(|id| catalog.get_internal_id_from_index(catalog.get_entry(*id).unwrap().internal_id)).collect::<Vec<_>>() );
+
+            if let Some(deps) = dependencies {
+                println!("Dependencies: {:#?}", deps.iter().flat_map(|id| catalog.get_internal_id_from_index(catalog.get_entry(*id).unwrap().internal_id)).collect::<Vec<_>>() );
+            }
         }
         Command::Extract(args) => {
                 let mut bundle = match TextBundle::load(&opt.catalog_path) {
