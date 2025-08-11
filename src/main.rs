@@ -26,8 +26,8 @@ struct Opt {
 
 #[derive(Debug, StructOpt)]
 enum Command {
-    /// Output dependencies for a prefab
-    Dependencies(Dependencies),
+    /// Print information about a specific InternalId
+    Info(Info),
     /// Extract the JSON from a bundle file
     Extract(Extract),
     /// Output a file addition compliant file for an existing Catalog entry
@@ -37,15 +37,7 @@ enum Command {
 }
 
 #[derive(Debug, StructOpt)]
-struct Add {
-    /// Output path for the catalog file
-    out_path: Utf8PathBuf,
-    /// Path to the TOML with the entries to append
-    toml_path: Utf8PathBuf,
-}
-
-#[derive(Debug, StructOpt)]
-struct Dependencies {
+struct Info {
     /// InternalId to find dependencies for. Make sure to surround it in quotation marks to not run into trouble.
     internal_id: String,
 }
@@ -101,75 +93,66 @@ fn main() {
     });
 
     match opt.cmd {
-        Command::Dependencies(args) => {
-                let res = if opt.bundled {
-                    let mut bundle = TextBundle::load(&opt.catalog_path).unwrap();
+        Command::Info(args) => {
+            let res = if opt.bundled {
+                let mut bundle = TextBundle::load(&opt.catalog_path).unwrap();
+                Catalog::from_str(bundle.take_string().unwrap())
+            } else {
+                Catalog::open(opt.catalog_path)
+            };
 
-                    Catalog::from_str(bundle.take_string().unwrap())
-                } else {
-                    Catalog::open(opt.catalog_path)
-                };
-
-                let catalog = match res {
-                    Ok(val) => val,
-                    Err(err) => {
-                        match err {
-                            CatalogError::Io(io) => {
-                                println!("An error happened while trying to open the Catalog: {}", io)
-                            }
-                            CatalogError::Json(json) => {
-                                println!("An error happened while trying to read the JSON: {}", json)
-                            }
-                            _ => (),
+            let catalog = match res {
+                Ok(val) => val,
+                Err(err) => {
+                    match err {
+                        CatalogError::Io(io) => {
+                            println!("An error happened while trying to open the Catalog: {}", io)
                         }
+                        CatalogError::Json(json) => {
+                            println!("An error happened while trying to read the JSON: {}", json)
+                        }
+                        _ => (),
+                    }
+                    std::process::exit(1);
+                }
+            };
 
+            let internal_id = match catalog.get_internal_id_index(&args.internal_id) {
+                Some(id) => id,
+                None => {
+                    let search: Vec<&String> = catalog
+                        .m_InternalIds
+                        .iter()
+                        .filter(|id| id.contains(&args.internal_id))
+                        .collect();
+                    if search.is_empty() {
+                        println!("Couldn't find the index for this InternalId. Make sure you've got the spelling right.");
                         std::process::exit(1);
+                        unreachable!()
+                    } else {
+                        let selection = dialoguer::FuzzySelect::new()
+                            .with_prompt(
+                                "Multiple InternalIds matching your input have been found, pick one or refine your search",
+                            )
+                            .items(&search)
+                            .interact()
+                            .unwrap();
+                        catalog.get_internal_id_index(search[selection]).unwrap()
                     }
-                };
+                }
+            };
 
-                let internal_id = match catalog.get_internal_id_index(&args.internal_id) {
-                    Some(id) => id,
-                    None => {
-                        let search: Vec<&String> = catalog
-                            .m_InternalIds
-                            .iter()
-                            .filter(|id| id.contains(&args.internal_id))
-                            .collect();
-
-                        if search.is_empty() {
-                            println!("Couldn't find the index for this InternalId. Make sure you've got the spelling right.");
-                            std::process::exit(1);
-                            unreachable!()
-                        } else {
-                            let selection = dialoguer::FuzzySelect::new()
-                                .with_prompt(
-                                    "Multiple InternalIds matching your input have been found, pick one or refine your search",
-                                )
-                                .items(&search)
-                                .interact()
-                                .unwrap();
-                            catalog.get_internal_id_index(search[selection]).unwrap()
-                        }
-                    }
-                };
-
-                let entry = catalog
+            let entry = catalog
                     .get_entry_by_internal_id(internal_id)
                     .expect("No entry found for this InternalId. Is the file corrupted?");
 
-                let dependencies = catalog
-                    .get_dependencies(entry)
-                    .expect("No dependency found for this InternalId. Are you sure this is a prefab?");
+            let dependencies = catalog
+                .get_dependencies(entry)
+                .expect("No dependency found for this InternalId. Are you sure this is a prefab?");
 
-                dependencies.iter().for_each(|id| {
-                    println!(
-                        "Dependency found: {}",
-                        catalog
-                            .get_internal_id_from_index(catalog.get_entry(*id).unwrap().internal_id)
-                            .unwrap()
-                    )
-                });
-            }
+            println!("InternalId: {}", catalog.get_internal_ids()[entry.internal_id.0 as usize]);
+            println!("Dependencies: {:#?}", dependencies.iter().flat_map(|id| catalog.get_internal_id_from_index(catalog.get_entry(*id).unwrap().internal_id)).collect::<Vec<_>>() );
+        }
         Command::Extract(args) => {
                 let mut bundle = match TextBundle::load(&opt.catalog_path) {
                     Ok(bundle) => bundle,
