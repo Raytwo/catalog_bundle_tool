@@ -1,11 +1,11 @@
 [package]
 name = "catalog_tools"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-catalog = { path = "./catalog" }
+addressables-rs = { git = "https://github.com/Raytwo/addressables-rs" }
 dialoguer = {  version = "0.10.4", features = ["fuzzy-select"] }
 # Might cause issues for Linux, but Linux users most likely deserve it? /jk
 structopt = "0.3"
