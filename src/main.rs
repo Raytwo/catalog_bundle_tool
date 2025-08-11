@@ -2,10 +2,8 @@ use std::path::PathBuf;
 
 use addressables_rs::{catalog::{Catalog, CatalogError}, lookup::{EntryId, KeyDataValue}};
 use camino::Utf8PathBuf;
-use dialoguer::{ Select };
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
-use std::io::Error;
 
 use astra_formats::TextBundle;
 
@@ -28,7 +26,7 @@ struct Opt {
 enum Command {
     /// Print information about a specific InternalId
     Info(Info),
-    /// Extract the JSON from a bundle file
+    /// Extract the JSON from a Catalog.bundle file
     Extract(Extract),
     /// Output a file addition compliant file for an existing Catalog entry
     Dump(Dump),
@@ -128,7 +126,6 @@ fn main() {
                     if search.is_empty() {
                         println!("Couldn't find the index for this InternalId. Make sure you've got the spelling right.");
                         std::process::exit(1);
-                        unreachable!()
                     } else {
                         let selection = dialoguer::FuzzySelect::new()
                             .with_prompt(
@@ -150,6 +147,8 @@ fn main() {
                 .get_dependencies(entry);
 
             println!("InternalId: {}", catalog.get_internal_ids()[entry.internal_id.0 as usize]);
+            println!("Resource type: {}", entry.resource_type);
+            println!("Provider type: {}", entry.provider_index);
 
             if let Some(deps) = dependencies {
                 println!("Dependencies: {:#?}", deps.iter().flat_map(|id| catalog.get_internal_id_from_index(catalog.get_entry(*id).unwrap().internal_id)).collect::<Vec<_>>() );
@@ -206,7 +205,6 @@ fn main() {
                         if search.is_empty() {
                             println!("Couldn't find the index for this InternalId. Make sure you've got the spelling right.");
                             std::process::exit(1);
-                            unreachable!()
                         } else {
                             let selection = dialoguer::FuzzySelect::new()
                                 .with_prompt(
@@ -312,7 +310,6 @@ fn main() {
                     if search.is_empty() {
                         println!("Couldn't find the index for this InternalId. Make sure you've got the spelling right.");
                         std::process::exit(1);
-                        unreachable!()
                     } else {
                         let selection = dialoguer::FuzzySelect::new()
                             .with_prompt(
